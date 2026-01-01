@@ -1,3 +1,9 @@
+# backend/routes.py
+# ======================================================
+# CINESCINTILLE – COMPLETE & FINAL ROUTES FILE
+# (No route mismatches, frontend-compatible, production-safe)
+# ======================================================
+
 from flask import Blueprint, request, jsonify, session
 from database.db import db
 from database.models import User, Movie, Review, Watchlist, Watched
@@ -30,7 +36,8 @@ def current_user():
 def tmdb_get(path, params=None):
     params = params or {}
     params["api_key"] = TMDB_API_KEY
-    return requests.get(f"{TMDB_BASE}{path}", params=params).json()
+    res = requests.get(f"{TMDB_BASE}{path}", params=params)
+    return res.json() if res.ok else {}
 
 
 # ======================================================
@@ -63,29 +70,20 @@ def register():
 
     db.session.add(user)
     db.session.commit()
-
     session["user_id"] = user.id
 
-    return jsonify({
-        "id": user.id,
-        "username": user.username,
-        "email": user.email
-    }), 201
+    return jsonify({"id": user.id, "username": user.username}), 201
 
 
 @main.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid JSON"}), 400
-
     user = User.query.filter_by(username=data.get("username")).first()
 
     if not user or not user.check_password(data.get("password")):
         return jsonify({"error": "Invalid credentials"}), 401
 
     session["user_id"] = user.id
-
     return jsonify({
         "id": user.id,
         "username": user.username,
@@ -132,7 +130,7 @@ def home():
         if not movie:
             movie = Movie(
                 tmdb_id=m["id"],
-                title=m["title"],
+                title=m.get("title", ""),
                 poster_path=m.get("poster_path", ""),
                 popularity=m.get("popularity", 0)
             )
@@ -164,12 +162,12 @@ def movie_detail(tmdb_id):
 
     if not movie:
         tmdb_data = tmdb_get(f"/movie/{tmdb_id}")
-        if "id" not in tmdb_data:
+        if not tmdb_data or "id" not in tmdb_data:
             return jsonify({"error": "Movie not found"}), 404
 
         movie = Movie(
             tmdb_id=tmdb_id,
-            title=tmdb_data["title"],
+            title=tmdb_data.get("title", ""),
             overview=tmdb_data.get("overview", ""),
             poster_path=tmdb_data.get("poster_path", ""),
             genres=",".join(g["name"] for g in tmdb_data.get("genres", [])),
@@ -180,8 +178,23 @@ def movie_detail(tmdb_id):
 
     full_data = get_movie_full(tmdb_id)
     full_data["movie"]["internal_id"] = movie.id
-
     return jsonify(full_data)
+
+
+@main.route("/movie/<int:tmdb_id>/status")
+def movie_status(tmdb_id):
+    u = current_user()
+    if not u:
+        return jsonify({"watchlist": False, "watched": False})
+
+    movie = Movie.query.filter_by(tmdb_id=tmdb_id).first()
+    if not movie:
+        return jsonify({"watchlist": False, "watched": False})
+
+    return jsonify({
+        "watchlist": Watchlist.query.filter_by(user_id=u.id, movie_id=movie.id).first() is not None,
+        "watched": Watched.query.filter_by(user_id=u.id, movie_id=movie.id).first() is not None
+    })
 
 
 # ======================================================
@@ -216,8 +229,8 @@ def toggle_watched():
     movie_id = request.json.get("movie_id")
 
     Watchlist.query.filter_by(user_id=u.id, movie_id=movie_id).delete()
-
     watched = Watched.query.filter_by(user_id=u.id, movie_id=movie_id).first()
+
     if watched:
         db.session.delete(watched)
         db.session.commit()
@@ -239,30 +252,48 @@ def add_review():
         return jsonify({"error": "Unauthorized"}), 401
 
     data = request.json
-
     review = Review(
         user_id=u.id,
         movie_id=data["movie_id"],
         rating=data["rating"],
         comment=data.get("comment", "")
     )
-
     db.session.add(review)
     db.session.commit()
     return jsonify({"message": "Review added"}), 201
 
 
-@main.route("/movie/<int:movie_id>/reviews")
-def get_reviews(movie_id):
-    reviews = Review.query.filter_by(movie_id=movie_id).all()
+@main.route("/movie/<int:tmdb_id>/reviews")
+def get_reviews(tmdb_id):
+    movie = Movie.query.filter_by(tmdb_id=tmdb_id).first()
+    if not movie:
+        return jsonify([])
 
-    return jsonify([{
-        "id": r.id,
-        "username": r.user.username,
-        "avatar": r.user.avatar,
-        "rating": r.rating,
-        "comment": r.comment
-    } for r in reviews])
+    reviews = Review.query.filter_by(movie_id=movie.id).all()
+    return jsonify([
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "username": r.user.username,
+            "avatar": r.user.avatar,
+            "rating": r.rating,
+            "comment": r.comment
+        }
+        for r in reviews
+    ])
+
+
+@main.route("/review/<int:review_id>", methods=["DELETE"])
+def delete_review(review_id):
+    u = current_user()
+    r = Review.query.get_or_404(review_id)
+
+    if not u or r.user_id != u.id:
+        return jsonify({"error": "Forbidden"}), 403
+
+    db.session.delete(r)
+    db.session.commit()
+    return jsonify({"message": "Deleted"})
 
 
 # ======================================================
@@ -284,17 +315,34 @@ def profile():
     })
 
 
+@main.route("/profile/update", methods=["POST"])
+def update_profile():
+    u = current_user()
+    if not u:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    u.name = data.get("name", u.name)
+    u.age = data.get("age", u.age)
+    u.avatar = data.get("avatar", u.avatar)
+    db.session.commit()
+    return jsonify({"message": "Profile updated"})
+
+
 @main.route("/profile/watchlist")
 def profile_watchlist():
     u = current_user()
     if not u:
         return jsonify([])
 
-    return jsonify([{
-        "id": w.movie.tmdb_id,
-        "title": w.movie.title,
-        "poster_path": w.movie.poster_path
-    } for w in u.watchlist])
+    return jsonify([
+        {
+            "id": w.movie.tmdb_id,
+            "title": w.movie.title,
+            "poster_path": w.movie.poster_path
+        }
+        for w in u.watchlist
+    ])
 
 
 @main.route("/profile/watched")
@@ -303,11 +351,72 @@ def profile_watched():
     if not u:
         return jsonify([])
 
-    return jsonify([{
-        "id": w.movie.tmdb_id,
-        "title": w.movie.title,
-        "poster_path": w.movie.poster_path
-    } for w in u.watched])
+    return jsonify([
+        {
+            "id": w.movie.tmdb_id,
+            "title": w.movie.title,
+            "poster_path": w.movie.poster_path
+        }
+        for w in u.watched
+    ])
+
+
+@main.route("/profile/reviews")
+def profile_reviews():
+    u = current_user()
+    if not u:
+        return jsonify([])
+
+    return jsonify([
+        {
+            "movie_title": r.movie.title,
+            "rating": r.rating,
+            "comment": r.comment
+        }
+        for r in u.reviews
+    ])
+
+
+# ======================================================
+# SEARCH
+# ======================================================
+
+@main.route("/search")
+def search():
+    q = request.args.get("q", "").strip()
+    if not q:
+        return jsonify([])
+
+    movies_map = {}
+
+    movie_res = tmdb_get("/search/movie", {"query": q})
+    for m in movie_res.get("results", []):
+        movies_map[m["id"]] = {
+            "tmdb_id": m["id"],
+            "title": m.get("title", ""),
+            "poster_path": m.get("poster_path", "")
+        }
+
+    person_res = tmdb_get("/search/person", {"query": q})
+    for p in person_res.get("results", [])[:3]:
+        credits = tmdb_get(f"/person/{p['id']}/movie_credits")
+
+        for m in credits.get("cast", []):
+            movies_map.setdefault(m["id"], {
+                "tmdb_id": m["id"],
+                "title": m.get("title", ""),
+                "poster_path": m.get("poster_path", "")
+            })
+
+        for m in credits.get("crew", []):
+            if m.get("job") == "Director":
+                movies_map.setdefault(m["id"], {
+                    "tmdb_id": m["id"],
+                    "title": m.get("title", ""),
+                    "poster_path": m.get("poster_path", "")
+                })
+
+    return jsonify(list(movies_map.values())[:15])
 
 
 # ======================================================
@@ -323,11 +432,14 @@ def recommend_collaborative_route():
     ids = recommend_collaborative(u.id, top_n=10)
     movies = Movie.query.filter(Movie.id.in_(ids)).all()
 
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
 
 
 @main.route("/recommend/content/<int:tmdb_id>")
@@ -337,13 +449,27 @@ def recommend_content(tmdb_id):
         return jsonify([])
 
     ids = recommend_similar_movies(movie.id, top_n=10)
-    movies = Movie.query.filter(Movie.id.in_(ids)).all()
 
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+    if not ids:
+        res = tmdb_get(f"/movie/{tmdb_id}/similar")
+        return jsonify([
+            {
+                "id": m["id"],
+                "title": m.get("title", ""),
+                "poster_path": m.get("poster_path", "")
+            }
+            for m in res.get("results", [])[:10]
+        ])
+
+    movies = Movie.query.filter(Movie.id.in_(ids)).all()
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
 
 
 @main.route("/recommend/crew/<int:tmdb_id>")
@@ -355,11 +481,14 @@ def recommend_crew(tmdb_id):
     ids = recommend_by_crew(seed.id, top_n=10)
     movies = Movie.query.filter(Movie.id.in_(ids)).all()
 
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
 
 
 @main.route("/recommend/hybrid")
@@ -367,8 +496,10 @@ def recommend_hybrid():
     tmdb_id = request.args.get("movie_id", type=int)
     u = current_user()
 
-    movie = Movie.query.filter_by(tmdb_id=tmdb_id).first() if tmdb_id else None
+    if not tmdb_id and not u:
+        return jsonify([])
 
+    movie = Movie.query.filter_by(tmdb_id=tmdb_id).first() if tmdb_id else None
     ids = hybrid_recommendation(
         movie_id=movie.id if movie else None,
         user_id=u.id if u else None,
@@ -376,9 +507,49 @@ def recommend_hybrid():
     )
 
     movies = Movie.query.filter(Movie.id.in_(ids)).all()
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
 
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+
+@main.route("/recommend/top-rated")
+def recommend_top_rated():
+    u = current_user()
+    watched = {w.movie.tmdb_id for w in u.watched} if u else set()
+
+    res = tmdb_get("/movie/top_rated")
+    results = []
+
+    for m in res.get("results", []):
+        if m["id"] in watched:
+            continue
+
+        movie = Movie.query.filter_by(tmdb_id=m["id"]).first()
+        if not movie:
+            movie = Movie(
+                tmdb_id=m["id"],
+                title=m.get("title", ""),
+                poster_path=m.get("poster_path", ""),
+                popularity=m.get("popularity", 0)
+            )
+            db.session.add(movie)
+
+        results.append(movie)
+        if len(results) >= 20:
+            break
+
+    db.session.commit()
+
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in results
+    ])
