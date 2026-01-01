@@ -28,6 +28,9 @@ def create_app():
     Session(app)
     db.init_app(app)
 
+    with app.app_context():
+        db.create_all()
+
     # ✅ CORRECT CORS (THIS FIXES /me)
     CORS(
         app,
