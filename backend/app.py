@@ -22,10 +22,9 @@ def create_app():
     # -------------------------------------------------
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
-    # Database (Postgres on Render, SQLite fallback locally)
     database_url = os.getenv("DATABASE_URL", "sqlite:///cinema.db")
 
-    # Render uses deprecated postgres://
+    # Render compatibility
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -33,7 +32,7 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # -------------------------------------------------
-    # SESSION CONFIG (REQUIRED FOR LOGIN TO WORK)
+    # SESSION CONFIG (LOGIN FIX)
     # -------------------------------------------------
     app.config.update(
         SESSION_TYPE="filesystem",
@@ -41,25 +40,22 @@ def create_app():
         SESSION_PERMANENT=False,
         SESSION_USE_SIGNER=True,
         SESSION_COOKIE_HTTPONLY=True,
-
-        # REQUIRED for Vercel → Render cookies
-        SESSION_COOKIE_SAMESITE="None",
-        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_SAMESITE="None",   # REQUIRED
+        SESSION_COOKIE_SECURE=True,       # REQUIRED
     )
 
     Session(app)
 
     # -------------------------------------------------
-    # DATABASE INIT (SAFE)
+    # DATABASE INIT
     # -------------------------------------------------
     db.init_app(app)
 
-    # Auto-create tables (acceptable on free tier)
     with app.app_context():
         db.create_all()
 
     # -------------------------------------------------
-    # CORS CONFIG (CRITICAL)
+    # CORS CONFIG (VERCEL → RENDER)
     # -------------------------------------------------
     CORS(
         app,
@@ -78,10 +74,6 @@ def create_app():
     # ROUTES
     # -------------------------------------------------
     app.register_blueprint(main)
-
-    if os.getenv("RENDER") == "true":
-        with app.app_context():
-         db.create_all()
 
     return app
 
