@@ -1,8 +1,8 @@
-import pickle
 import os
-from sklearn.metrics.pairwise import cosine_similarity
+import pickle
 
-ARTIFACT_PATH = os.path.join("recommendation", "artifacts")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ARTIFACT_PATH = os.path.join(BASE_DIR, "recommendation", "artifacts")
 
 def load_artifacts():
     with open(os.path.join(ARTIFACT_PATH, "movie_vectors.pkl"), "rb") as f:
@@ -12,19 +12,3 @@ def load_artifacts():
         movie_ids = pickle.load(f)
 
     return movie_vectors, movie_ids
-
-
-def recommend_similar_movies(movie_id, top_n=10):
-    movie_vectors, movie_ids = load_artifacts()
-
-    if movie_id not in movie_ids:
-        return []
-
-    idx = movie_ids.index(movie_id)
-    similarity_scores = cosine_similarity(
-        movie_vectors[idx], movie_vectors
-    ).flatten()
-
-    similar_indices = similarity_scores.argsort()[::-1][1:top_n+1]
-
-    return [movie_ids[i] for i in similar_indices]
