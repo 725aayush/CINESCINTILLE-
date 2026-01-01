@@ -1,45 +1,10 @@
-# -------------------------
-# Core Flask stack
-# -------------------------
 Flask
 Flask-Cors
 Flask-Login
 Flask-Session
 Flask-SQLAlchemy
-
-# -------------------------
-# Database / ORM
-# -------------------------
 SQLAlchemy
-
-# -------------------------
-# Environment variables
-# -------------------------
 python-dotenv
-
-# -------------------------
-# HTTP requests (TMDB API)
-# -------------------------
 requests
-
-# -------------------------
-# Production server
-# -------------------------
 gunicorn
-
-# -------------------------
-# Machine Learning / Data
-# -------------------------
-numpy
-pandas
-scikit-learn
-scipy
-joblib
-
-# -------------------------
-# Utilities (Flask dependencies, safety)
-# -------------------------
-Werkzeug
-Jinja2
-itsdangerous
-click
+psycopg2-binary
