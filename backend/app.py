@@ -4,6 +4,10 @@ from flask_session import Session
 from database.db import db
 from backend.routes import main
 import os
+import sys
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, BASE_DIR)
 
 def create_app():
     app = Flask(__name__)
