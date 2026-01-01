@@ -1,10 +1,30 @@
-Flask
-Flask-Cors
-Flask-Login
-Flask-Session
-Flask-SQLAlchemy
-SQLAlchemy
-python-dotenv
-requests
-gunicorn
-psycopg2-binary
+# ------------------------
+# Core Backend
+# ------------------------
+Flask==3.1.2
+Flask-Cors==6.0.2
+Flask-Login==0.6.3
+Flask-Session==0.8.0
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.45
+gunicorn==23.0.0
+python-dotenv==1.2.1
+
+# ------------------------
+# Database (PostgreSQL)
+# ------------------------
+psycopg2-binary==2.9.9
+
+# ------------------------
+# HTTP / External APIs
+# ------------------------
+requests==2.32.5
+
+# ------------------------
+# Machine Learning Stack
+# ------------------------
+numpy==2.4.0
+pandas==2.3.3
+scikit-learn==1.8.0
+scipy==1.16.3
+joblib==1.5.3
