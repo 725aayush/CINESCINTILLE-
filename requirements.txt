@@ -12,8 +12,9 @@ python-dotenv==1.2.1
 
 # ------------------------
 # Database (PostgreSQL)
+# psycopg v3 — Python 3.13 SAFE
 # ------------------------
-psycopg2-binary==2.9.9
+psycopg[binary]==3.2.3
 
 # ------------------------
 # HTTP / External APIs
