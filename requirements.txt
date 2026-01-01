@@ -2,6 +2,7 @@ flask
 flask-cors
 flask-login
 flask-session
+flask-sqlalchemy
 sqlalchemy
 python-dotenv
 gunicorn
