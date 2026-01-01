@@ -22,7 +22,9 @@ TMDB_BASE = "https://api.themoviedb.org/3"
 
 def current_user():
     uid = session.get("user_id")
-    return User.query.get(uid) if uid else None
+    if not uid:
+        return None
+    return User.query.get(uid)
 
 
 def tmdb_get(path, params=None):
@@ -399,166 +401,154 @@ def search():
 # RECOMMENDATIONS
 # ======================================================
 
+# -------------------------------------------------
+# COLLABORATIVE RECOMMENDATION
+# -------------------------------------------------
 @main.route("/recommend/collaborative")
 def recommend_collaborative_route():
-    u = current_user()
-    if not u:
+    user = current_user()
+    if not user:
         return jsonify([])
 
-    movie_ids = recommend_collaborative(u.id, top_n=10)
-    movies = Movie.query.filter(Movie.id.in_(movie_ids)).all()
+    internal_ids = recommend_collaborative(user.id, top_n=10)
 
-    return jsonify([{
-        "id": m.tmdb_id,     # ALWAYS TMDB ID to frontend
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+    if not internal_ids:
+        return jsonify([])
 
+    movies = Movie.query.filter(Movie.id.in_(internal_ids)).all()
+
+    return jsonify([
+        {
+            "id": m.tmdb_id,          # ✔ frontend always gets TMDB ID
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
+
+
+# -------------------------------------------------
+# CONTENT-BASED RECOMMENDATION
+# -------------------------------------------------
 @main.route("/recommend/content/<int:tmdb_id>")
 def recommend_content(tmdb_id):
     movie = Movie.query.filter_by(tmdb_id=tmdb_id).first()
     if not movie:
         return jsonify([])
 
-    # ML-based similarity (expects INTERNAL ID)
-    movie_ids = recommend_similar_movies(movie.id, top_n=10)
+    # ML model uses INTERNAL DB ID
+    internal_ids = recommend_similar_movies(movie.id, top_n=10)
 
-    # 🔥 FALLBACK: TMDB similar
-    if not movie_ids:
-        res = tmdb_get(f"/movie/{tmdb_id}/similar")
-        return jsonify([{
-            "id": m["id"],
-            "title": m["title"],
-            "poster_path": m["poster_path"]
-        } for m in res.get("results", [])[:10]])
+    # -----------------------------
+    # FALLBACK → TMDB similar
+    # -----------------------------
+    if not internal_ids:
+        res = requests.get(
+            f"{TMDB_BASE}/movie/{tmdb_id}/similar",
+            params={"api_key": TMDB_API_KEY}
+        ).json()
 
-    movies = Movie.query.filter(Movie.id.in_(movie_ids)).all()
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+        return jsonify([
+            {
+                "id": m["id"],
+                "title": m.get("title", ""),
+                "poster_path": m.get("poster_path", "")
+            }
+            for m in res.get("results", [])[:10]
+        ])
 
+    movies = Movie.query.filter(Movie.id.in_(internal_ids)).all()
+
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
+
+
+# -------------------------------------------------
+# CREW / DIRECTOR-BASED RECOMMENDATION
+# -------------------------------------------------
 @main.route("/recommend/crew/<int:tmdb_id>")
 def recommend_crew(tmdb_id):
     seed = Movie.query.filter_by(tmdb_id=tmdb_id).first()
     if not seed:
         return jsonify([])
 
-    seen = set()
-    results = []
+    results = recommend_by_crew(tmdb_id, limit=10)
 
-    # ---- TMDB CREDITS ----
-    credits = tmdb_get(f"/movie/{tmdb_id}/credits")
-    crew = credits.get("crew", [])
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in results
+    ])
 
-    directors = [c for c in crew if c.get("job") == "Director"]
-    if not directors:
-        return jsonify([])
 
-    person_id = directors[0]["id"]
-    person_movies = tmdb_get(f"/person/{person_id}/movie_credits")
-
-    for m in person_movies.get("crew", []):
-        mid = m.get("id")
-
-        # 🔴 STRICT FILTERING
-        if not mid or mid == tmdb_id:
-            continue
-        if mid in seen:
-            continue
-
-        seen.add(mid)
-
-        movie = Movie.query.filter_by(tmdb_id=mid).first()
-        if not movie:
-            movie = Movie(
-                tmdb_id=mid,
-                title=m.get("title") or m.get("original_title", ""),
-                poster_path=m.get("poster_path", ""),
-                popularity=m.get("popularity", 0)
-            )
-            db.session.add(movie)
-
-        results.append(movie)
-
-        if len(results) >= 10:
-            break
-
-    db.session.commit()
-
-    return jsonify([{
-        "id": m.tmdb_id,          # ✔ TMDB ID ONLY
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in results])
-
+# -------------------------------------------------
+# HYBRID RECOMMENDATION
+# -------------------------------------------------
 @main.route("/recommend/hybrid")
 def recommend_hybrid():
     tmdb_id = request.args.get("movie_id", type=int)
-    user_id = session.get("user_id")
+    user = current_user()
 
-    if not tmdb_id and not user_id:
+    if not tmdb_id and not user:
         return jsonify([])
 
     movie = Movie.query.filter_by(tmdb_id=tmdb_id).first() if tmdb_id else None
-
     internal_id = movie.id if movie else None
 
-    recommended_ids = hybrid_recommendation(
+    internal_ids = hybrid_recommendation(
         movie_id=internal_id,
-        user_id=user_id,
+        user_id=user.id if user else None,
         top_n=10
     )
 
-    movies = Movie.query.filter(Movie.id.in_(recommended_ids)).all()
+    if not internal_ids:
+        return jsonify([])
 
-    # 🔥 FALLBACK
-    if not movies and tmdb_id:
-        res = tmdb_get(f"/movie/{tmdb_id}/similar")
-        return jsonify([{
-            "id": m["id"],
-            "title": m["title"],
-            "poster_path": m["poster_path"]
-        } for m in res.get("results", [])[:10]])
+    movies = Movie.query.filter(Movie.id.in_(internal_ids)).all()
 
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in movies])
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in movies
+    ])
 
+
+# -------------------------------------------------
+# TOP-RATED (TMDB SEED + DB SAFE)
+# -------------------------------------------------
 @main.route("/recommend/top-rated")
 def recommend_top_rated():
     user = current_user()
 
-    # -----------------------------
-    # 1️⃣ Get watched INTERNAL IDs
-    # -----------------------------
     watched_tmdb_ids = set()
-
     if user:
-        watched_tmdb_ids = {
-            w.movie.tmdb_id for w in user.watched
-        }
+        watched_tmdb_ids = {w.movie.tmdb_id for w in user.watched}
 
-    # -----------------------------
-    # 2️⃣ Fetch TMDB Top Rated
-    # -----------------------------
-    res = tmdb_get("/movie/top_rated")
+    res = requests.get(
+        f"{TMDB_BASE}/movie/top_rated",
+        params={"api_key": TMDB_API_KEY}
+    ).json()
 
     results = []
 
     for m in res.get("results", []):
         tmdb_id = m.get("id")
 
-        # 🚫 Skip watched movies
         if tmdb_id in watched_tmdb_ids:
             continue
 
-        # -----------------------------
-        # 3️⃣ Seed DB safely
-        # -----------------------------
         movie = Movie.query.filter_by(tmdb_id=tmdb_id).first()
         if not movie:
             movie = Movie(
@@ -571,18 +561,16 @@ def recommend_top_rated():
 
         results.append(movie)
 
-        # 🔒 Limit
         if len(results) >= 20:
             break
 
     db.session.commit()
 
-    # -----------------------------
-    # 4️⃣ Return TMDB IDs only
-    # -----------------------------
-    return jsonify([{
-        "id": m.tmdb_id,
-        "title": m.title,
-        "poster_path": m.poster_path
-    } for m in results])
-
+    return jsonify([
+        {
+            "id": m.tmdb_id,
+            "title": m.title,
+            "poster_path": m.poster_path
+        }
+        for m in results
+    ])
