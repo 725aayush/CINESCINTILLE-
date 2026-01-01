@@ -1,0 +1,155 @@
+/* ================================
+   SLIDER ROOT
+================================ */
+
+.slider.project-hero {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+  background-color: #000;
+}
+
+/* ================================
+   SLIDE IMAGE
+================================ */
+
+.slider-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ================================
+   DARK OVERLAY (READABILITY)
+================================ */
+
+.overlay-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.6) 35%,
+      rgba(0, 0, 0, 0.2) 60%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.85),
+      transparent 45%
+    );
+  pointer-events: none;
+}
+
+/* ================================
+   TEXT OVERLAY
+================================ */
+
+.slide-content {
+  position: absolute;
+  top: 50%;
+  left: 4%;
+  transform: translateY(-50%);
+  z-index: 2;
+  max-width: 520px;
+}
+
+.slide-content h2 {
+  font-size: 3.6rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  color: #ffffff;
+  text-shadow: 0 6px 28px rgba(0, 0, 0, 0.9);
+}
+
+.slide-content p {
+  font-size: 1.25rem;
+  color: #dddddd;
+  line-height: 1.6;
+  max-width: 420px;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.85);
+}
+
+/* ================================
+   SLIDER BUTTONS
+================================ */
+
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+  font-size: 38px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.slider-btn.left {
+  left: 18px;
+}
+
+.slider-btn.right {
+  right: 18px;
+}
+
+.slider-btn:hover {
+  background: rgba(229, 9, 20, 0.9);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+@media (max-width: 1024px) {
+  .slide-content h2 {
+    font-size: 2.8rem;
+  }
+
+  .slide-content p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .slider.project-hero {
+    height: 420px;
+  }
+
+  .slide-content {
+    left: 6%;
+    max-width: 90%;
+  }
+
+  .slide-content h2 {
+    font-size: 2.2rem;
+  }
+
+  .slide-content p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .slider.project-hero {
+    height: 360px;
+  }
+
+  .slide-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .slide-content p {
+    display: none; /* Cleaner mobile hero */
+  }
+}

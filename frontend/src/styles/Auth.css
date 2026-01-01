@@ -1,0 +1,245 @@
+.auth-container {
+  max-width: 350px;
+  margin: 80px auto;
+  padding: 30px;
+  background: #111;
+  color: #fff;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.auth-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.auth-container button {
+  width: 100%;
+  padding: 10px;
+  background: crimson;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.link-btn {
+  color: #4da3ff;
+  text-decoration: none;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+.profile {
+  padding: 40px;
+}
+
+.profile-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.review-card {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+/* Reset & Base */
+.login-page {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background-color: #080808;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Header with Blur Effect */
+.main-header {
+  height: 80px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 0 4rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-logo {
+  font-size: 1.5rem;
+  letter-spacing: 6px;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+}
+
+/* Split Layout */
+.split-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Left Side: Collage */
+.visual-side {
+  flex: 1; /* Half screen */
+  position: relative;
+  overflow: hidden;
+}
+
+.collage-hero {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Makes the 5x5 grid fill the left side */
+  filter: brightness(0.7);
+}
+
+.overlay-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent, #080808);
+}
+
+/* Right Side: Login Center */
+.form-side {
+  flex: 1; /* Half screen */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: #080808;
+}
+
+.login-glass-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.card-header {
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.card-header h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-header p {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* Form Styling */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ccc;
+}
+
+.input-group input {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #111;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.input-group input:focus {
+  background: #fff;
+  border-color: #e50914;
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
+}
+
+/* Red Button */
+.btn-primary {
+  margin-top: 1rem;
+  padding: 14px;
+  background-color: #e50914;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.1s;
+}
+
+.btn-primary:hover {
+  background-color: #f6121d;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Footer & Errors */
+.error-badge {
+  background: rgba(229, 9, 20, 0.15);
+  color: #ff4d4d;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(229, 9, 20, 0.3);
+}
+
+.footer-link {
+  margin-top: 2rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.footer-link a {
+  color: #e50914;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-link a:hover {
+  text-decoration: underline;
+}

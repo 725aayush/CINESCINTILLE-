@@ -1,0 +1,260 @@
+.movie-detail {
+  padding: 40px 5%;
+  color: #fff;
+  background: #000;
+  min-height: 100vh;
+}
+
+.movie-hero {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  margin-bottom: 50px;
+  padding-top: 60px; /* Offset for header */
+}
+
+.movie-hero img {
+  width: 300px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.movie-info h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.director {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #ccc;
+}
+
+.director span {
+  color: #e50914;
+  font-weight: bold;
+}
+
+.genres {
+  color: #888;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+.overview {
+  line-height: 1.6;
+  font-size: 1.1rem;
+  max-width: 800px;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.actions button {
+  padding: 12px 24px;
+  border-radius: 5px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.actions button.active {
+  background: #e50914;
+  border-color: #e50914;
+}
+
+.actions button:hover:not(:disabled) {
+  background: #fff;
+  color: #000;
+}
+
+.section {
+  margin-top: 60px;
+}
+
+.section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+  border-left: 5px solid #e50914;
+  padding-left: 15px;
+}
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.providers {
+  display: flex;
+  gap: 15px;
+}
+
+.providers img {
+  width: 60px;
+  border-radius: 8px;
+}
+
+.cast-row {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 15px;
+}
+
+.cast-card {
+  min-width: 130px;
+  text-align: center;
+}
+
+.cast-card img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+  border: 2px solid #222;
+}
+
+.character {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.star {
+  font-size: 30px;
+  cursor: pointer;
+  color: #333;
+  margin-right: 5px;
+}
+
+.star.active {
+  color: #ffcc00;
+}
+
+.review-box textarea {
+  width: 100%;
+  height: 120px;
+  background: #111;
+  border: 1px solid #222;
+  color: #fff;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.btn-red {
+  background: #e50914;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.review-card {
+  background: #0a0a0a;
+  padding: 20px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: 1px solid #111;
+}
+
+.user-rating {
+  color: #ffcc00;
+  margin: 5px 0;
+}
+
+.btn-delete {
+  background: transparent;
+  color: #555;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-top: 10px;
+}
+
+.btn-delete:hover {
+  color: #e50914;
+}
+
+/* movieDetail.css snippets */
+
+.review-comment-card {
+  background: #121212;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.2s;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e50914; /* Brand accent */
+}
+
+.comment-username {
+  font-weight: bold;
+  color: #fff;
+}
+
+.comment-rating {
+  color: #ffcc00; /* Gold for stars */
+  font-size: 0.9rem;
+}
+
+.comment-body p {
+  color: #ccc;
+  line-height: 1.5;
+}
+
+.comment-delete-btn {
+  background: transparent;
+  color: #555;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  margin-top: 10px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.comment-delete-btn:hover {
+  color: #e50914;
+}

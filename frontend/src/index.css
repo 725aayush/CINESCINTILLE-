@@ -1,0 +1,55 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f1014;
+  color: white;
+  font-family: "Segoe UI", sans-serif;
+}
+
+button {
+  background: #00aaff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.auth-box {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 30px;
+  background: #111;
+  border-radius: 8px;
+  color: white;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
+.auth-box button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  background: #e50914;
+  border: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}

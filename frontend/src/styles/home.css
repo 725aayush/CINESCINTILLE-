@@ -1,0 +1,252 @@
+/* ================================
+   GLOBAL HOME LAYOUT
+================================ */
+
+.home-container {
+  background-color: #080808;
+  min-height: 100vh;
+  color: #ffffff;
+  overflow-x: hidden;
+  padding-top: var(--header-height);
+}
+
+/* 
+   IMPORTANT:
+   No margin-top here → distance from Header = 0
+   Header controls its own height
+*/
+.home-content-sections {
+  padding: 0 0 60px 0;
+}
+
+/* Loading & Error */
+.loading,
+.error-message {
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 80px 0;
+  color: #b3b3b3;
+}
+
+
+/* ================================
+   SLIDER FIX (VERY IMPORTANT)
+================================ */
+
+/* Wrapper used by ProjectSlider */
+.project-slider-wrapper,
+.hero-slider,
+.slider-container {
+  margin-top: 0;     /* ZERO distance from header */
+  padding-top: 0;
+}
+
+/* Space AFTER slider (not before) */
+.project-slider-wrapper {
+  margin-bottom: 40px;
+}
+
+
+/* ================================
+   SECTION BLOCKS
+================================ */
+
+.home-section-block {
+  margin-bottom: 56px;
+  position: relative;
+}
+
+/* Highlighted row (IMDb / special) */
+.highlight-row {
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.035),
+    rgba(255, 255, 255, 0.01)
+  );
+  padding: 28px 0;
+  border-radius: 16px;
+}
+
+
+/* ================================
+   SECTION HEADER
+================================ */
+
+.section-accent {
+  width: 44px;
+  height: 4px;
+  background-color: #e50914;
+  margin-left: 4%;
+  margin-bottom: 12px;
+  border-radius: 6px;
+}
+
+
+/* ================================
+   MOVIE ROW CONTAINER
+================================ */
+
+.row-wrapper {
+  position: relative;
+  padding-left: 4%;
+}
+
+.row-wrapper h2 {
+  font-size: 1.55rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+  letter-spacing: 0.6px;
+}
+
+
+/* ================================
+   POSTER ROW
+================================ */
+
+.row-posters {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 22px 0;
+  scroll-behavior: smooth;
+}
+
+.row-posters::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* ================================
+   NAVIGATION ARROWS
+================================ */
+
+.row-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.75);
+  border: none;
+  color: white;
+  font-size: 22px;
+  padding: 18px 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.25s ease, background 0.25s ease;
+}
+
+.row-wrapper:hover .row-arrow {
+  opacity: 1;
+}
+
+.row-arrow.left {
+  left: 0;
+}
+
+.row-arrow.right {
+  right: 0;
+}
+
+.row-arrow:hover {
+  background: rgba(229, 9, 20, 0.9);
+}
+
+
+/* ================================
+   MOVIE CARD
+================================ */
+
+.movie-card {
+  position: relative;
+  min-width: 168px;
+  max-width: 168px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Prevent layout jump */
+.row-posters:hover .movie-card {
+  transform: translateZ(0);
+}
+
+.movie-card img {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  background-color: #111;
+}
+
+/* Hover effect */
+.movie-card:hover {
+  transform: scale(1.1);
+  z-index: 10;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.75);
+}
+
+
+/* ================================
+   MOVIE OVERLAY (TITLE)
+================================ */
+
+.movie-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 18px 10px 12px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95),
+    rgba(0, 0, 0, 0.4),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.movie-card:hover .movie-overlay {
+  opacity: 1;
+}
+
+.movie-overlay p {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+@media (max-width: 768px) {
+  .movie-card {
+    min-width: 142px;
+    max-width: 142px;
+  }
+
+  .row-wrapper h2 {
+    font-size: 1.3rem;
+  }
+
+  .section-accent {
+    margin-left: 6%;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-card {
+    min-width: 122px;
+    max-width: 122px;
+  }
+
+  .row-wrapper {
+    padding-left: 6%;
+  }
+}
+
