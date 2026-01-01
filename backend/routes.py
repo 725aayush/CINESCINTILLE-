@@ -474,18 +474,15 @@ def recommend_content(tmdb_id):
 # -------------------------------------------------
 @main.route("/recommend/crew/<int:tmdb_id>")
 def recommend_crew(tmdb_id):
-    # 1️⃣ Get movie using TMDB ID
     seed = Movie.query.filter_by(tmdb_id=tmdb_id).first()
     if not seed:
         return jsonify([])
 
-    # 2️⃣ Call recommender with INTERNAL ID and correct param name
-    movie_ids = recommend_by_crew(seed.id, top_n=10)
+    # Pass internal ID to recommender
+    recommended_internal_ids = recommend_by_crew(seed.id, top_n=10)
 
-    # 3️⃣ Fetch movies from DB
-    movies = Movie.query.filter(Movie.id.in_(movie_ids)).all()
+    movies = Movie.query.filter(Movie.id.in_(recommended_internal_ids)).all()
 
-    # 4️⃣ Return TMDB-safe response
     return jsonify([
         {
             "id": m.tmdb_id,
@@ -494,6 +491,7 @@ def recommend_crew(tmdb_id):
         }
         for m in movies
     ])
+
 
 
 # -------------------------------------------------
